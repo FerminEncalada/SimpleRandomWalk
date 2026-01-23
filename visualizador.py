@@ -30,10 +30,24 @@ class Visualizador:
         entorno = simulacion.entorno
         pasos_por_dia = simulacion.pasos_por_dia
         
-        # Crear figura más grande
-        fig, ax = plt.subplots(figsize=(18, 16))
+        # Crear figura con espacio extra para paneles informativos
+        fig = plt.figure(figsize=(20, 16))
         
-        # Configurar límites con más espacio
+        # Crear grid: área principal para la simulación y áreas laterales para info
+        gs = fig.add_gridspec(1, 3, width_ratios=[1, 6, 1], wspace=0.05)
+        
+        # Panel izquierdo para información
+        ax_left = fig.add_subplot(gs[0, 0])
+        ax_left.axis('off')
+        
+        # Área central para la simulación
+        ax = fig.add_subplot(gs[0, 1])
+        
+        # Panel derecho para leyenda
+        ax_right = fig.add_subplot(gs[0, 2])
+        ax_right.axis('off')
+        
+        # Configurar límites del área de simulación
         margen = 2
         ax.set_xlim(-margen, entorno.ancho + margen)
         ax.set_ylim(-margen, entorno.alto + margen)
@@ -165,24 +179,23 @@ class Visualizador:
                                  zorder=5, alpha=1.0)
                 elementos_particulas.append(punto)
                 
-                # Mostrar ID (más visible)
-                texto = ax.text(x, y - 2.5, f'#{particula.id}', 
-                              fontsize=10, ha='center', va='top', fontweight='bold',
-                              bbox=dict(boxstyle='round,pad=0.4', 
-                                      facecolor='white', alpha=0.9, 
-                                      edgecolor='black', linewidth=1.5),
+                # Indicador de comida consumida DENTRO de la partícula
+                if particula.comida_consumida > 0:
+                    comida_text = ax.text(x, y, f'{particula.comida_consumida}', 
+                                        fontsize=10, ha='center', va='center',
+                                        color='black', fontweight='bold',
+                                        zorder=7)
+                    elementos_particulas.append(comida_text)
+                
+                # Mostrar ID FUERA de la partícula (arriba, más cerca)
+                texto = ax.text(x, y - 1.2, f'#{particula.id}', 
+                              fontsize=7, ha='center', va='bottom', fontweight='bold',
+                              color='black',
+                              bbox=dict(boxstyle='round,pad=0.2', 
+                                      facecolor='white', alpha=0.8, 
+                                      edgecolor='none'),
                               zorder=6)
                 elementos_particulas.append(texto)
-                
-                # Indicador de comida consumida (sin emoji problemático)
-                if particula.comida_consumida > 0:
-                    comida_text = ax.text(x, y + 2.5, f'x{particula.comida_consumida}', 
-                                        fontsize=11, ha='center', va='bottom',
-                                        bbox=dict(boxstyle='round,pad=0.3', 
-                                                facecolor='#ffeb3b', alpha=0.9,
-                                                edgecolor='#f57c00', linewidth=1.5),
-                                        zorder=6, fontweight='bold')
-                    elementos_particulas.append(comida_text)
             
             # Actualizar título
             progreso = (paso_en_dia / pasos_por_dia) * 100
